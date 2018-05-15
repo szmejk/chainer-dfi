@@ -72,7 +72,7 @@ def parse_numbers(rect_str):
         return None
     return tuple(map(int, rect_str.split(',')))
 
-def feature(net, x, verbose=False, layers=['4_2_ln', '4_6_ln', '5_2_ln']):
+def feature(net, x, verbose=False, layers=['3_1_ex', '4_3_ex', '5_1_ex']):
     y = net(x, verbose)                                                                 #propagates image through network
     return [F.reshape(y[layer], (y[layer].shape[0], -1)) for layer in layers]  #extracts layers
 
@@ -201,7 +201,7 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
     base, ext = os.path.splitext(args.output_image)
     residuals = []
     initial_x = xp.random.uniform(-10, 10, x.shape).astype(np.float32)
-    print('Calculating residuals') #computes residuals for artifact removal
+    print('Calculating residuals') #compute residuals for artifact removal
     link = chainer.Link(x=x.shape)
     if device_id >= 0:
         link.to_gpu(device_id)
@@ -221,7 +221,7 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
         if isSingleModeOn:
             w = initialWeight
         else:
-            w = i * 0.1 + 0.4
+            w = i * 0.1
 
         print('Generating image for weight: {0:.2f}'.format(w))
         link = chainer.Link(x=x.shape)

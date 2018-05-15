@@ -2,6 +2,7 @@ import numpy as np
 import chainer
 from chainer import functions as F
 from chainer import links as L
+import copy
 
 class VGG19(chainer.Chain):
 
@@ -273,15 +274,15 @@ class VGG19(chainer.Chain):
             if(add == 'add_last'):
                   info += 'Add ->'
                   shortcut = F.add(h,h_p)
-                  h = shortcut
+                  h = copy.deepcopy(shortcut)
             elif(add == 'add_shortcut'):
                   info += 'Add shortcut ->'
-                  shortcut = shortcut + h
-                  h = shortcut
+                  shortcut = F.add(shortcut + h)
+                  h = copy.deepcopy(shortcut)
             elif(add == 'ln'):
-                  h_p = h
+                  h_p = copy.deepcopy(h)
 
             if(verbose):
                   print info
-            layers[layer_name] = h
+            layers[layer_name] = copy.deepcopy(h)
         return layers
