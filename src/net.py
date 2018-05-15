@@ -5,7 +5,7 @@ from chainer import links as L
 
 class VGG19(chainer.Chain):
 
-    mean = np.asarray([104, 117, 124], dtype=np.float32)
+    mean = np.asarray([103.94,116.78,123.68], dtype=np.float32)
 
     @classmethod
     def preprocess(cls, image, input_type='RGB'):
@@ -25,215 +25,191 @@ class VGG19(chainer.Chain):
 
     def __init__(self):
         super(VGG19, self).__init__(
-
+            # conv2d
             conv1 = L.Convolution2D(3, 32, 3, stride=2, pad=1, nobias=True),
             conv1_bn = L.BatchNormalization(32, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv1_sc = L.Scale(1, (32,), bias_term=True),
-            # relu activation
+            # seq 1: bottleneck 1/1
             conv2_1_ex = L.Convolution2D(32, 32, 1, stride=1, pad=1, nobias=True),
             conv2_1_ex_bn = L.BatchNormalization(32, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv2_1_ex_sc = L.Scale(1, (32,), bias_term=True),
-            # relu activation
             conv2_1_dw = L.DepthwiseConvolution2D(32, 1, 3, stride=1, pad=1, nobias=True),
             conv2_1_dw_bn = L.BatchNormalization(32, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv2_1_dw_sc = L.Scale(1, (32,), bias_term=True),
-            # relu activation
             conv2_1_ln = L.Convolution2D(32, 16, 1, stride=1, pad=1, nobias=True),
             conv2_1_ln_bn = L.BatchNormalization(16, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv2_1_ln_sc = L.Scale(1, (16,), bias_term=True),
-            # relu activation
+            # seq 2: bottleneck 1/2
             conv2_2_ex = L.Convolution2D(16, 96, 1, stride=1, pad=1, nobias=True),
             conv2_2_ex_bn = L.BatchNormalization(96, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv2_2_ex_sc = L.Scale(1, (96,), bias_term=True),
-            # relu activation
             conv2_2_dw = L.DepthwiseConvolution2D(96, 1, 3, stride=2, pad=1, nobias=True),
             conv2_2_dw_bn = L.BatchNormalization(96, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv2_2_dw_sc = L.Scale(1, (96,), bias_term=True),
-            # relu activation
             conv2_2_ln = L.Convolution2D(96, 24, 1, stride=1, pad=1, nobias=True),
             conv2_2_ln_bn = L.BatchNormalization(24, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv2_2_ln_sc = L.Scale(1, (24,), bias_term=True),
-            # relu activation
+            # seq 2: bottleneck 2/2
             conv3_1_ex = L.Convolution2D(24, 144, 1, stride=1, pad=1, nobias=True),
             conv3_1_ex_bn = L.BatchNormalization(144, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv3_1_ex_sc = L.Scale(1, (144,), bias_term=True),
-            # relu activation
             conv3_1_dw = L.DepthwiseConvolution2D(144, 1, 3, stride=2, pad=1, nobias=True),
             conv3_1_dw_bn = L.BatchNormalization(144, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv3_1_dw_sc = L.Scale(1, (144,), bias_term=True),
-            # relu activation
             conv3_1_ln = L.Convolution2D(144, 24, 1, stride=1, pad=1, nobias=True),
             conv3_1_ln_bn = L.BatchNormalization(24, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv3_1_ln_sc = L.Scale(1, (24,), bias_term=True),
-            # relu activation
+            # shortcut_1 - conv2_2_ln_bn + conv3_1_ln_bn
+            # seq 3: bottleneck 1/3
             conv3_2_ex = L.Convolution2D(24, 144, 1, stride=1, pad=1, nobias=True),
             conv3_2_ex_bn = L.BatchNormalization(144, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv3_2_ex_sc = L.Scale(1, (144,), bias_term=True),
-            # relu activation
             conv3_2_dw = L.DepthwiseConvolution2D(144, 1, 3, stride=2, pad=1, nobias=True),
             conv3_2_dw_bn = L.BatchNormalization(144, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv3_2_dw_sc = L.Scale(1, (144,), bias_term=True),
-            # relu activation
             conv3_2_ln = L.Convolution2D(144, 32, 1, stride=1, pad=1, nobias=True),
             conv3_2_ln_bn = L.BatchNormalization(32, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv3_2_ln_sc = L.Scale(1, (32,), bias_term=True),
-            # relu activation
+            # seq 3: bottleneck 2/3
             conv4_1_ex = L.Convolution2D(32, 192, 1, stride=1, pad=1, nobias=True),
             conv4_1_ex_bn = L.BatchNormalization(192, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_1_ex_sc = L.Scale(1, (192,), bias_term=True),
-            # relu activation
             conv4_1_dw = L.DepthwiseConvolution2D(192, 1, 3, stride=2, pad=1, nobias=True),
             conv4_1_dw_bn = L.BatchNormalization(192, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_1_dw_sc = L.Scale(1, (192,), bias_term=True),
-            # relu activation
             conv4_1_ln = L.Convolution2D(192, 32, 1, stride=1, pad=1, nobias=True),
             conv4_1_ln_bn = L.BatchNormalization(32, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_1_ln_sc = L.Scale(1, (32,), bias_term=True),
-            # relu activation
+            # shortcut_2 - conv3_2_ln_bn + conv4_1_ln_bn (????)
+            # seq 3: bottleneck 3/3
             conv4_2_ex = L.Convolution2D(32, 192, 1, stride=1, pad=1, nobias=True),
             conv4_2_ex_bn = L.BatchNormalization(192, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_2_ex_sc = L.Scale(1, (192,), bias_term=True),
-            # relu activation
             conv4_2_dw = L.DepthwiseConvolution2D(192, 1, 3, stride=2, pad=1, nobias=True),
             conv4_2_dw_bn = L.BatchNormalization(192, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_2_dw_sc = L.Scale(1, (192,), bias_term=True),
-            # relu activation
             conv4_2_ln = L.Convolution2D(192, 32, 1, stride=1, pad=1, nobias=True),
             conv4_2_ln_bn = L.BatchNormalization(32, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_2_ln_sc = L.Scale(1, (32,), bias_term=True),
-            # relu activation
+            # shortcut_3 - shortcut_2 + conv4_2_ln_bn
+            # seq 4: bottleneck 1/4
             conv4_3_ex = L.Convolution2D(32, 192, 1, stride=1, pad=1, nobias=True),
             conv4_3_ex_bn = L.BatchNormalization(192, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_3_ex_sc = L.Scale(1, (192,), bias_term=True),
-            # relu activation
             conv4_3_dw = L.DepthwiseConvolution2D(192, 1, 3, stride=2, pad=1, nobias=True),
             conv4_3_dw_bn = L.BatchNormalization(192, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_3_dw_sc = L.Scale(1, (192,), bias_term=True),
-            # relu activation
             conv4_3_ln = L.Convolution2D(192, 64, 1, stride=1, pad=1, nobias=True),
             conv4_3_ln_bn = L.BatchNormalization(64, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_3_ln_sc = L.Scale(1, (64,), bias_term=True),
-            # relu activation
+            # seq 4: bottleneck 2/4
             conv4_4_ex = L.Convolution2D(64, 384, 1, stride=1, pad=1, nobias=True),
             conv4_4_ex_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_4_ex_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_4_dw = L.DepthwiseConvolution2D(384, 1, 3, stride=2, pad=1, nobias=True),
             conv4_4_dw_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_4_dw_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_4_ln = L.Convolution2D(384, 64, 1, stride=1, pad=1, nobias=True),
             conv4_4_ln_bn = L.BatchNormalization(64, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_4_ln_sc = L.Scale(1, (64,), bias_term=True),
-            # relu activation
+            # shortcut_4 - conv4_3_ln_bn + conv4_4_ln_bn
+            # seq 4: bottleneck 3/4
             conv4_5_ex = L.Convolution2D(64, 384, 1, stride=1, pad=1, nobias=True),
             conv4_5_ex_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_5_ex_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_5_dw = L.DepthwiseConvolution2D(384, 1, 3, stride=2, pad=1, nobias=True),
             conv4_5_dw_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_5_dw_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_5_ln = L.Convolution2D(384, 64, 1, stride=1, pad=1, nobias=True),
             conv4_5_ln_bn = L.BatchNormalization(64, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_5_ln_sc = L.Scale(1, (64,), bias_term=True),
-            # relu activation
+            # shortcut_5 - shortcut_4 + conv4_5_ln_bn
+            # seq 4: bottleneck 4/4
             conv4_6_ex = L.Convolution2D(64, 384, 1, stride=1, pad=1, nobias=True),
             conv4_6_ex_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_6_ex_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_6_dw = L.DepthwiseConvolution2D(384, 1, 3, stride=2, pad=1, nobias=True),
             conv4_6_dw_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_6_dw_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_6_ln = L.Convolution2D(384, 64, 1, stride=1, pad=1, nobias=True),
             conv4_6_ln_bn = L.BatchNormalization(64, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_6_ln_sc = L.Scale(1, (64,), bias_term=True),
-            # relu activation
+            # shortcut_6 - shortcut_5 + conv4_6_ln_bn
+            # seq 5: bottleneck 1/3
             conv4_7_ex = L.Convolution2D(64, 384, 1, stride=1, pad=1, nobias=True),
             conv4_7_ex_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_7_ex_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_7_dw = L.DepthwiseConvolution2D(384, 1, 3, stride=2, pad=1, nobias=True),
             conv4_7_dw_bn = L.BatchNormalization(384, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_7_dw_sc = L.Scale(1, (384,), bias_term=True),
-            # relu activation
             conv4_7_ln = L.Convolution2D(384, 96, 1, stride=1, pad=1, nobias=True),
             conv4_7_ln_bn = L.BatchNormalization(96, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv4_7_ln_sc = L.Scale(1, (96,), bias_term=True),
-            # relu activation
+            # seq 5: bottleneck 2/3
             conv5_1_ex = L.Convolution2D(96, 576, 1, stride=1, pad=1, nobias=True),
             conv5_1_ex_bn = L.BatchNormalization(576, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_1_ex_sc = L.Scale(1, (576,), bias_term=True),
-            # relu activation
             conv5_1_dw = L.DepthwiseConvolution2D(576, 1, 3, stride=2, pad=1, nobias=True),
             conv5_1_dw_bn = L.BatchNormalization(576, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_1_dw_sc = L.Scale(1, (576,), bias_term=True),
-            # relu activation
             conv5_1_ln = L.Convolution2D(576, 96, 1, stride=1, pad=1, nobias=True),
             conv5_1_ln_bn = L.BatchNormalization(96, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_1_ln_sc = L.Scale(1, (96,), bias_term=True),
-            # relu activation
+            # shortcut_7 - conv4_7_ln_bn + conv5_1_ln_bn
+            # seq 5: bottleneck 3/3
             conv5_2_ex = L.Convolution2D(96, 576, 1, stride=1, pad=1, nobias=True),
             conv5_2_ex_bn = L.BatchNormalization(576, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_2_ex_sc = L.Scale(1, (576,), bias_term=True),
-            # relu activation
             conv5_2_dw = L.DepthwiseConvolution2D(576, 1, 3, stride=2, pad=1, nobias=True),
             conv5_2_dw_bn = L.BatchNormalization(576, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_2_dw_sc = L.Scale(1, (576,), bias_term=True),
-            # relu activation
             conv5_2_ln = L.Convolution2D(576, 96, 1, stride=1, pad=1, nobias=True),
             conv5_2_ln_bn = L.BatchNormalization(96, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_2_ln_sc = L.Scale(1, (96,), bias_term=True),
-            # relu activation
+            # shortcut_8 - shortcut_7 + conv5_2_ln_bn
+            # seq 6: bottleneck 1/3
             conv5_3_ex = L.Convolution2D(96, 576, 1, stride=1, pad=1, nobias=True),
             conv5_3_ex_bn = L.BatchNormalization(576, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_3_ex_sc = L.Scale(1, (576,), bias_term=True),
-            # relu activation
             conv5_3_dw = L.DepthwiseConvolution2D(576, 1, 3, stride=2, pad=1, nobias=True),
             conv5_3_dw_bn = L.BatchNormalization(576, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_3_dw_sc = L.Scale(1, (576,), bias_term=True),
-            # relu activation
             conv5_3_ln = L.Convolution2D(576, 160, 1, stride=1, pad=1, nobias=True),
             conv5_3_ln_bn = L.BatchNormalization(160, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv5_3_ln_sc = L.Scale(1, (160,), bias_term=True),
-            # relu activation
+            # seq 6: bottleneck 2/3
             conv6_1_ex = L.Convolution2D(160, 960, 1, stride=1, pad=1, nobias=True),
             conv6_1_ex_bn = L.BatchNormalization(960, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_1_ex_sc = L.Scale(1, (960,), bias_term=True),
-            # relu activation
             conv6_1_dw = L.DepthwiseConvolution2D(960, 1, 3, stride=2, pad=1, nobias=True),
             conv6_1_dw_bn = L.BatchNormalization(960, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_1_dw_sc = L.Scale(1, (960,), bias_term=True),
-            # relu activation
             conv6_1_ln = L.Convolution2D(960, 160, 1, stride=1, pad=1, nobias=True),
             conv6_1_ln_bn = L.BatchNormalization(160, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_1_ln_sc = L.Scale(1, (160,), bias_term=True),
-            # relu activation
+            # shortcut_9 - conv5_3_ln_bn + conv6_1_ln_bn
+            # seq 6: bottleneck 3/3
             conv6_2_ex = L.Convolution2D(160, 960, 1, stride=1, pad=1, nobias=True),
             conv6_2_ex_bn = L.BatchNormalization(960, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_2_ex_sc = L.Scale(1, (960,), bias_term=True),
-            # relu activation
             conv6_2_dw = L.DepthwiseConvolution2D(960, 1, 3, stride=2, pad=1, nobias=True),
             conv6_2_dw_bn = L.BatchNormalization(960, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_2_dw_sc = L.Scale(1, (960,), bias_term=True),
-            # relu activation
             conv6_2_ln = L.Convolution2D(960, 160, 1, stride=1, pad=1, nobias=True),
             conv6_2_ln_bn = L.BatchNormalization(160, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_2_ln_sc = L.Scale(1, (160,), bias_term=True),
-            # relu activation
+            # shortcut_10 - shortcut_9 + conv6_2_ln_bn
+            # seq 7: bottleneck 1/1
             conv6_3_ex = L.Convolution2D(160, 960, 1, stride=1, pad=1, nobias=True),
             conv6_3_ex_bn = L.BatchNormalization(960, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_3_ex_sc = L.Scale(1, (960,), bias_term=True),
-            # relu activation
             conv6_3_dw = L.DepthwiseConvolution2D(960, 1, 3, stride=2, pad=1, nobias=True),
             conv6_3_dw_bn = L.BatchNormalization(960, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_3_dw_sc = L.Scale(1, (960,), bias_term=True),
-            # relu activation
             conv6_3_ln = L.Convolution2D(960, 320, 1, stride=1, pad=1, nobias=True),
             conv6_3_ln_bn = L.BatchNormalization(320, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_3_ln_sc = L.Scale(1, (320,), bias_term=True),
-            # relu activation
+            # conv2d
             conv6_4 = L.Convolution2D(320, 1280, 1, stride=1, pad=1, nobias=True),
             conv6_4_bn = L.BatchNormalization(1280, decay=0.9, eps=1e-5, dtype=np.float32, use_gamma=False, use_beta=False),
             conv6_4_sc = L.Scale(1, (1280,), bias_term=True),
@@ -297,12 +273,13 @@ class VGG19(chainer.Chain):
                         '6_3_ln', '6_3_ln_bn', '6_3_ln_sc',
                         '6_4', '6_4_bn', '6_4_sc']
         layers = {}
+        chainer.using_config('train', False)
         h = x
         for layer_name in layer_names:
             #conv1
             #bn
             #relu
-            if layer_name.endswith('bn')
+            # if layer_name.endswith('bn'):
             h = F.relu(self['conv' + layer_name](h))
             layers[layer_name] = h
         return layers

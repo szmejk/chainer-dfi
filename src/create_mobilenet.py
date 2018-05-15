@@ -13,8 +13,6 @@ def copy_model(src, dst):
     assert isinstance(src, link.Chain)
     assert isinstance(dst, link.Chain)
     for child in src.children():
-        # print child.name + " " + str(child)
-        print child.name
         child.name = child.name.replace("/", "_")
         child.name = child.name.replace("expand", "ex")
         child.name = child.name.replace("scale", "sc")
@@ -40,14 +38,15 @@ def copy_model(src, dst):
                 print 'Ignore %s because of parameter mismatch' % child.name
                 continue
             for a, b in zip(child.namedparams(), dst_child.namedparams()):
+                # print(a[1].data)
                 b[1].data = a[1].data
-            #print 'Copy %s' % child.name
+            print 'Copy %s' % child.name
 
-print 'load VGG19 caffemodel'
+print 'load MobileNet caffemodel'
 ref = CaffeFunction('mobilenet_v2.caffemodel')
 vgg = VGG19()
 print 'copy weights'
 copy_model(ref, vgg)
 
-print 'save "vgg19.model"'
-# serializers.save_npz('mobilenetv2.model', vgg)
+print 'save "mobilenetv2.model"'
+serializers.save_npz('mobilenetv2.model', vgg)

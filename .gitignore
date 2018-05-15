@@ -5,3 +5,5 @@
 lfw-deepfunneled/*
 image/*
 !image/.gitkeep
+
+\.DS_Store
