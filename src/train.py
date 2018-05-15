@@ -12,7 +12,7 @@ from chainer import serializers
 from net import VGG19
 from lbfgs import LBFGS
 
-input_image_size = (200, 200)
+input_image_size = (224, 224)
 
 def parse_arg():
     parser = argparse.ArgumentParser('Deep Feature Interpolation')
@@ -72,8 +72,8 @@ def parse_numbers(rect_str):
         return None
     return tuple(map(int, rect_str.split(',')))
 
-def feature(net, x, layers=['3_1', '4_1', '5_1']):
-    y = net(x)                                                                 #propagates image through network
+def feature(net, x, verbose=False, layers=['4_2_ln', '4_6_ln', '5_2_ln']):
+    y = net(x, verbose)                                                                 #propagates image through network
     return [F.reshape(y[layer], (y[layer].shape[0], -1)) for layer in layers]  #extracts layers
 
 def rank_image(net, paths, image_size, image, top_num, clip_rect=None):
@@ -95,7 +95,7 @@ def mean_feature(net, paths, image_size, base_feature, top_num, batch_size, clip
     for i in six.moves.range(0, image_num, batch_size):
         x = [preprocess_image(Image.open(path).convert('RGB'), image_size, clip_rect) for path in paths[i:i + batch_size]]
         x = xp.asarray(np.concatenate(x, axis=0))
-        y = feature(net, x)   #check what is going on in here
+        y = feature(net, x, True)   #check what is going on in here
         features.append([cuda.to_cpu(layer.data) for layer in y])
     if image_num > top_num:
         last_features = np.concatenate([f[-1] for f in features], axis=0) #extracts 5_1 from each feature vector
@@ -160,7 +160,7 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
     rangeUpperBound = 6
 
     if args.single_weight_mode is not None:
-        print('Single weight mode is on, calculating for w = ' + args.single_weight_mode)
+        print 'Single weight mode is on, calculating for w = ' + str(args.single_weight_mode)
         isSingleModeOn = True
         initialWeight = args.single_weight_mode
         rangeUpperBound = 2
@@ -179,7 +179,8 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
     image_mean = np.mean(image, axis=(2, 3), keepdims=True) # mean
     image_std = np.std(image, axis=(2, 3), keepdims=True)   # standard deviation
     x = xp.asarray(image)
-    org_layers = feature(net, x)
+    org_layers = feature(net, x, True)
+    # exit()
     org_layers = [layer.data for layer in org_layers]
     org_layer_norms = [xp.asarray(np.linalg.norm(cuda.to_cpu(layer), axis=1, keepdims=True)) for layer in org_layers] # computes matrix norm for each row
 
@@ -220,7 +221,7 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
         if isSingleModeOn:
             w = initialWeight
         else:
-            w = i * 0.1
+            w = i * 0.1 + 0.4
 
         print('Generating image for weight: {0:.2f}'.format(w))
         link = chainer.Link(x=x.shape)

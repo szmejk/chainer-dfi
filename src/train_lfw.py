@@ -16,7 +16,7 @@ def parse_arg():
     parser.add_argument('feature', type=str, help='Feature name. Words must be concatenated with "_", and leading with "~" indicates set feature off (e.g. ~no_beard). You can use multiple features with comma separated feature names (e.g. ~mouth_closed,smiling)')
     parser.add_argument('output_image', type=str, help='Output image file path')
     parser.add_argument('--gpu', '-g', type=int, default=-1, help='GPU device index (negative value indicate CPU)')
-    parser.add_argument('--model', '-m', type=str, default='vgg19.model', help='Model file path')
+    parser.add_argument('--model', '-m', type=str, default='mobilenetv2.model', help='Model file path')
     parser.add_argument('--batch_size', '-b', type=int, default=10, help='Mini batch size')
     parser.add_argument('--lr', '-l', type=float, default=1, help='Learning rate')
     parser.add_argument('--iter', '-i', type=int, default=1000)
