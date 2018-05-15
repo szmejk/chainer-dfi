@@ -33,6 +33,8 @@ def parse_arg():
     parser.add_argument('--single-weight-mode', type=float, help='When specified runs DFI only for supplied weight')
     return parser.parse_args()
 
+
+#wywoluje statyczna metode z klasy VGG19
 def preprocess_image(image, image_size, clip_rect=None):
     if clip_rect is not None:
         image = image.crop(clip_rect)
@@ -71,8 +73,8 @@ def parse_numbers(rect_str):
     return tuple(map(int, rect_str.split(',')))
 
 def feature(net, x, layers=['3_1', '4_1', '5_1']):
-    y = net(x)
-    return [F.reshape(y[layer], (y[layer].shape[0], -1)) for layer in layers]
+    y = net(x)                                                                 #propagates image through network
+    return [F.reshape(y[layer], (y[layer].shape[0], -1)) for layer in layers]  #extracts layers
 
 def rank_image(net, paths, image_size, image, top_num, clip_rect=None):
     xp = net.xp
@@ -84,7 +86,7 @@ def rank_image(net, paths, image_size, image, top_num, clip_rect=None):
         diffs.append(np.sum(np.square(image - im)))
     diffs = np.asarray(diffs, dtype=np.float32)
     rank = np.argsort(diffs)
-    return [paths[r] for r in rank[:top_num]]
+    return [paths[r] for r in rank[:top_num]]                                  #returns k nearest neighbours of an image
 
 def mean_feature(net, paths, image_size, base_feature, top_num, batch_size, clip_rect=None):
     xp = net.xp
@@ -93,13 +95,13 @@ def mean_feature(net, paths, image_size, base_feature, top_num, batch_size, clip
     for i in six.moves.range(0, image_num, batch_size):
         x = [preprocess_image(Image.open(path).convert('RGB'), image_size, clip_rect) for path in paths[i:i + batch_size]]
         x = xp.asarray(np.concatenate(x, axis=0))
-        y = feature(net, x)
+        y = feature(net, x)   #check what is going on in here
         features.append([cuda.to_cpu(layer.data) for layer in y])
     if image_num > top_num:
-        last_features = np.concatenate([f[-1] for f in features], axis=0)
+        last_features = np.concatenate([f[-1] for f in features], axis=0) #extracts 5_1 from each feature vector
         last_features = last_features.reshape((last_features.shape[0], -1))
         base_feature = cuda.to_cpu(base_feature).reshape((1, -1,))
-        diff = np.sum((last_features - base_feature) ** 2, axis=1)
+        diff = np.sum((last_features - base_feature) ** 2, axis=1) #computes sum of squared differences between targer and source features
 
         nearest_indices = np.argsort(diff)[:top_num]
         nearests = [np.concatenate(xs, axis=0)[nearest_indices] for xs in zip(*features)]
@@ -174,13 +176,14 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
     if input_clip_rect is not None:
         original_image = original_image.crop(input_clip_rect)
     image = preprocess_image(original_image, input_image_size)
-    image_mean = np.mean(image, axis=(2, 3), keepdims=True)
-    image_std = np.std(image, axis=(2, 3), keepdims=True)
+    image_mean = np.mean(image, axis=(2, 3), keepdims=True) # mean
+    image_std = np.std(image, axis=(2, 3), keepdims=True)   # standard deviation
     x = xp.asarray(image)
     org_layers = feature(net, x)
     org_layers = [layer.data for layer in org_layers]
-    org_layer_norms = [xp.asarray(np.linalg.norm(cuda.to_cpu(layer), axis=1, keepdims=True)) for layer in org_layers]
+    org_layer_norms = [xp.asarray(np.linalg.norm(cuda.to_cpu(layer), axis=1, keepdims=True)) for layer in org_layers] # computes matrix norm for each row
 
+    #1 step from original paper
     print('Calculating source feature')
     if len(source_image_paths) > near_image_num:
         source_image_paths = rank_image(net, source_image_paths, input_image_size, image, near_image_num, clip_rect)
@@ -189,26 +192,29 @@ def train(args, image_path, source_image_paths, target_image_paths, input_clip_r
     print('Calculating target feature')
     if len(target_image_paths) > near_image_num:
         target_image_paths = rank_image(net, target_image_paths, input_image_size, image, near_image_num, clip_rect)
-    target_feature = mean_feature(net, target_image_paths, input_image_size, org_layers[-1], near_image_num, batch_size, clip_rect)
+    target_feature = mean_feature(net, target_image_paths, input_image_size, org_layers[-1], near_image_num, batch_size, clip_rect) #org_layers[-1] - 5_1
 
+    #2 step from original paper
     attribute_vectors = [normalized_diff(s, t) for s, t in zip(source_feature, target_feature)]
 
     base, ext = os.path.splitext(args.output_image)
     residuals = []
     initial_x = xp.random.uniform(-10, 10, x.shape).astype(np.float32)
-    print('Calculating residuals')
+    print('Calculating residuals') #computes residuals for artifact removal
     link = chainer.Link(x=x.shape)
     if device_id >= 0:
         link.to_gpu(device_id)
     link.x.data[...] = initial_x
     optimizer = LBFGS(lr, stack_size=5)
     optimizer.setup(link)
+
     for j in six.moves.range(600):
         losses = update(net, optimizer, link, org_layers, tv_weight)
         if (j + 1) % 20 == 0:
             z = cuda.to_cpu(link.x.data)
             z = adjust_color_distribution(z, image_mean, image_std)
             residuals.append(z - image)
+
     for i in six.moves.range(1, rangeUpperBound):
 
         if isSingleModeOn:

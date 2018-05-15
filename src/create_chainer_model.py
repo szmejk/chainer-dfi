@@ -6,6 +6,7 @@ from chainer import link
 from chainer.links.caffe import CaffeFunction
 from chainer import serializers
 import sys
+from chainer import links as L
 from net import VGG19
 
 def copy_model(src, dst):
@@ -35,8 +36,12 @@ def copy_model(src, dst):
 
 print 'load VGG19 caffemodel'
 ref = CaffeFunction('VGG_ILSVRC_19_layers.caffemodel')
+ref = CaffeFunction('mobilenet_v2.caffemodel')
+
 vgg = VGG19()
 print 'copy weights'
+
+
 copy_model(ref, vgg)
 
 print 'save "vgg19.model"'
