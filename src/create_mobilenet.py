@@ -6,14 +6,23 @@ from chainer import link
 from chainer.links.caffe import CaffeFunction
 from chainer import serializers
 import sys
-from chainer import links as L
 from net import VGG19
 
 def copy_model(src, dst):
+    global test
     assert isinstance(src, link.Chain)
     assert isinstance(dst, link.Chain)
     for child in src.children():
-        if child.name not in dst.__dict__: continue
+        # print child.name + " " + str(child)
+        print child.name
+        child.name = child.name.replace("/", "_")
+        child.name = child.name.replace("expand", "ex")
+        child.name = child.name.replace("scale", "sc")
+        child.name = child.name.replace("linear", "ln")
+        child.name = child.name.replace("dwise", "dw")
+        if child.name not in dst.__dict__:
+                print "Child name not found in destination + " + str(child.name)
+                continue
         dst_child = dst[child.name]
         if type(child) != type(dst_child): continue
         if isinstance(child, link.Chain):
@@ -32,17 +41,13 @@ def copy_model(src, dst):
                 continue
             for a, b in zip(child.namedparams(), dst_child.namedparams()):
                 b[1].data = a[1].data
-            print 'Copy %s' % child.name
+            #print 'Copy %s' % child.name
 
 print 'load VGG19 caffemodel'
-ref = CaffeFunction('VGG_ILSVRC_19_layers.caffemodel')
 ref = CaffeFunction('mobilenet_v2.caffemodel')
-
 vgg = VGG19()
 print 'copy weights'
-
-
 copy_model(ref, vgg)
 
 print 'save "vgg19.model"'
-serializers.save_npz('vgg19.model', vgg)
+# serializers.save_npz('mobilenetv2.model', vgg)
