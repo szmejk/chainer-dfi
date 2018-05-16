@@ -251,9 +251,9 @@ class VGG19(chainer.Chain):
         shortcut = None
         add = ''
         self.n_calls += 1
-        print 'MobileNet(v2) working ' + str(self.n_calls) + 'th time...' 
+        print('MobileNet(v2) working ' + str(self.n_calls) + 'th time...') 
         if(verbose):
-            print '(input) -> ' + str(h.shape) + ' -> '
+            print('(input) -> ' + str(h.shape) + ' -> ')
         for layer_name in layer_names:
             if(layer_name.endswith('ln')):
                   if(layer_name in shortcuts):
@@ -283,6 +283,6 @@ class VGG19(chainer.Chain):
                   h_p = copy.deepcopy(h)
 
             if(verbose):
-                  print info
+                  print(info)
             layers[layer_name] = copy.deepcopy(h)
         return layers

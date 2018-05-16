@@ -38,7 +38,6 @@ def copy_model(src, dst):
                 print 'Ignore %s because of parameter mismatch' % child.name
                 continue
             for a, b in zip(child.namedparams(), dst_child.namedparams()):
-                # print(a[1].data)
                 b[1].data = a[1].data
             print 'Copy %s' % child.name
 
